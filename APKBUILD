@@ -31,7 +31,7 @@ fi
 
 # Source
 _repository="android_kernel_samsung_gta2xlwifi"
-_commit="788d1aa959d402941e0dd501c3a37a8f85ae66a9"
+_commit="20938a12951ba63bcbd824ebf1a9c7318c3b68d6"
 _config="config-$_flavor.$arch"
 source="
 	$pkgname-$_commit.tar.gz::https://github.com/quent1-fr/$_repository/archive/$_commit.tar.gz
@@ -57,6 +57,6 @@ package() {
 }
 
 sha512sums="
-b0bd7025aac1e14fcd55a1c4f84aff0524dd96610b4aea49ba43e602fc1c7c3d1cc31fe2ed2fec3708b6622d7b9f76c0626d955f08df52105abe77cc09122640  linux-samsung-gta2xlwifi-788d1aa959d402941e0dd501c3a37a8f85ae66a9.tar.gz
-1234e2f877debd22c3939948c54fa7e56bdb56ff4324cfb70093bf7b07275a0e5da935983d16b5f992ea4e62f87da329ef86f637c533e70384973920b712cc0c  config-samsung-gta2xlwifi.aarch64
+16fcec6a241841b849a5df67384b5b962fa3d25371f74117a6d3f0995d7d65cd715340f396e40ad9144ce239a6a7ec83d368569a1d980a3621064343b40f64ff  linux-samsung-gta2xlwifi-20938a12951ba63bcbd824ebf1a9c7318c3b68d6.tar.gz
+3b74639b0f13803ead0c2bdda480ee527ed7f812280fe4ed14e793b5725c83625d0cd2a979172725856b3100bd6836e4187f6dc84fd2739c190c167af368c53e  config-samsung-gta2xlwifi.aarch64
 "
