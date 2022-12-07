@@ -1,62 +1,67 @@
-# Reference: <https://postmarketos.org/vendorkernel>
-# Kernel config based on: arch/arm/configs/(CHANGEME!)
+# Kernel config based on: postmarketos-qcom-msm8953
 
-pkgname=linux-samsung-gta2xlwifi
-pkgver=3.18.140
-pkgrel=0
-pkgdesc="Samsung Galaxy Tab A 10.5 2018 kernel fork"
-arch="aarch64"
-_carch="arm64"
 _flavor="samsung-gta2xlwifi"
-url="https://kernel.org"
+pkgname=linux-$_flavor
+pkgver=5.18.3
+pkgrel=2
+pkgdesc="Samsung Galaxy Tab A 10.5 2018 kernel, based on Mainline kernel fork for Qualcomm MSM8953 devices"
+arch="aarch64"
+url="https://github.com/quent1-fr/msm8953-mainline-linux"
 license="GPL-2.0-only"
-options="!strip !check !tracedeps pmb:cross-native"
+options="!strip !check !tracedeps
+	pmb:cross-native
+	pmb:kconfigcheck-waydroid
+	pmb:kconfigcheck-nftables
+	"
 makedepends="
 	bash
 	bc
 	bison
 	devicepkg-dev
+	findutils
 	flex
 	openssl-dev
 	perl
-	gcc6
+	postmarketos-installkernel
 "
 
-# Compiler: GCC 6 (doesn't boot when compiled with newer versions)
-if [ "${CC:0:5}" != "gcc6-" ]; then
-	CC="gcc6-$CC"
-	HOSTCC="gcc6-gcc"
-	CROSS_COMPILE="gcc6-$CROSS_COMPILE"
-fi
-
+_carch="arm64"
 # Source
-_repository="android_kernel_samsung_gta2xlwifi"
-_commit="20938a12951ba63bcbd824ebf1a9c7318c3b68d6"
-_config="config-$_flavor.$arch"
+_commit="458e9e267d6638936df59b53aaff47a4dff0d2b4"
 source="
-	$pkgname-$_commit.tar.gz::https://github.com/quent1-fr/$_repository/archive/$_commit.tar.gz
-	$_config
+	$pkgname-$_commit.tar.gz::https://github.com/quent1-fr/msm8953-mainline-linux/archive/$_commit.tar.gz
+	config-$_flavor.$arch
 "
-builddir="$srcdir/$_repository-$_commit"
-_outdir="out"
+builddir="$srcdir/linux-$_commit"
 
 prepare() {
 	default_prepare
-	. downstreamkernel_prepare
+	
+	mkdir -p "$builddir"
+	tar xvzf $pkgname-$_commit.tar.gz -C "$builddir" --strip 1
+        cp "$srcdir/config-$_flavor.$arch" "$builddir/.config"
 }
 
 build() {
 	unset LDFLAGS
-	make O="$_outdir" ARCH="$_carch" CC="${CC:-gcc}" \
-		KBUILD_BUILD_VERSION="$((pkgrel + 1 ))-postmarketOS"
+	make ARCH="$_carch" CC="${CC:-gcc}" \
+		KBUILD_BUILD_VERSION=$((pkgrel + 1 ))
 }
 
 package() {
-	downstreamkernel_package "$builddir" "$pkgdir" "$_carch" \
-		"$_flavor" "$_outdir"
-}
+	mkdir -p "$pkgdir"/boot
+	make zinstall modules_install dtbs_install \
+		ARCH="$_carch" \
+		INSTALL_MOD_STRIP=1 \
+		INSTALL_PATH="$pkgdir"/boot \
+		INSTALL_MOD_PATH="$pkgdir" \
+		INSTALL_DTBS_PATH="$pkgdir"/usr/share/dtb
 
+	install -D "$builddir"/include/config/kernel.release \
+		"$pkgdir"/usr/share/kernel/$_flavor/kernel.release
+
+}
 sha512sums="
-16fcec6a241841b849a5df67384b5b962fa3d25371f74117a6d3f0995d7d65cd715340f396e40ad9144ce239a6a7ec83d368569a1d980a3621064343b40f64ff  linux-samsung-gta2xlwifi-20938a12951ba63bcbd824ebf1a9c7318c3b68d6.tar.gz
-3b74639b0f13803ead0c2bdda480ee527ed7f812280fe4ed14e793b5725c83625d0cd2a979172725856b3100bd6836e4187f6dc84fd2739c190c167af368c53e  config-samsung-gta2xlwifi.aarch64
+ef1f82c9ff1f16bd4da7b01ee4b793df1b7e241792f15241bf16db3000457e140ccf423f9fc375f2f250a0e5113df1b153c3b5276892fc957602e32ce184ff25  linux-samsung-gta2xlwifi-458e9e267d6638936df59b53aaff47a4dff0d2b4.tar.gz
+296c115b284a2d43eb16986be8ae5b32146a86667e48370a5e4e05444602063a3e287d799b2f60d9b237319d4371939fcb16652b36c23db43700d2946f22d314  config-samsung-gta2xlwifi.aarch64
 "
